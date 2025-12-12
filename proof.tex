@@ -1,0 +1,73 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Concise Proof: Teacher Forcing as a Hidden Energy-Based Model via Importance Sampling and Variational Bound}
+
+\author{Anonymous}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+Consider an autoregressive model $p(y|x) = \prod_t p(y_t \mid y_{<t}, x)$, trained with teacher forcing. The loss is $\mathcal{L} = -\sum_t \log p(y_t \mid y_{<t}, x) \approx -\log p(y|x)$.
+
+\section{Energy-Based Definition}
+
+Define $E(y|x) = -\log p(y|x)$, so:
+\[
+p(y|x) = \frac{\exp(-E(y|x))}{Z(x)}, \quad Z(x) = \sum_y \exp(-E(y|x))
+\]
+(Note that $Z$ is intractable for long sequences.)
+
+The loss becomes:
+\[
+\mathcal{L}(y_{gt}|x) = E(y_{gt}|x) + \log Z(x)
+\]
+
+\section{Importance Sampling for $Z$}
+
+Let $Q(y|x)$ be a proposal distribution (e.g., approximated by teacher forcing: $Q \approx$ empirical distribution of ground truths).
+\[
+Z(x) = \mathbb{E}_{y \sim Q} \left[ \frac{\exp(-E(y|x))}{Q(y|x)} \right]
+\]
+In practice, use Monte Carlo: sample $y \sim Q$, weight by $\exp(-E)/Q$.
+
+\section{Jensen's Inequality for Bound}
+
+Since $\log$ is concave:
+\[
+\log Z(x) = \log \mathbb{E}_Q \left[ \frac{\exp(-E(y|x))}{Q(y|x)} \right] \geq \mathbb{E}_Q \left[ \log \frac{\exp(-E(y|x))}{Q(y|x)} \right]
+\]
+Expanding:
+\[
+= \mathbb{E}_Q [-E(y|x) - \log Q(y|x)] = -\mathbb{E}_Q [E(y|x)] + H(Q|x)
+\]
+Thus, the lower bound is:
+\[
+\log Z(x) \geq -\mathbb{E}_Q [E(y|x)] + H(Q|x)
+\]
+
+\section{Saturation and Optimality}
+
+Equality holds if and only if $Q(y|x) \propto \exp(-E(y|x))$, i.e., $Q^* = p(y|x)$ (Boltzmann distribution).
+
+\section{Free Energy Interpretation}
+
+The free energy is $F(Q|x) = \mathbb{E}_Q [E(y|x)] - H(Q|x)$.
+\[
+\log Z(x) = - \min_Q F(Q|x) = \max_Q [-\mathbb{E}_Q [E(y|x)] + H(Q|x)]
+\]
+Minimizing $F$ balances energy (low $E$) and entropy (diversity).
+
+\section{Link to Teacher Forcing and GFNs}
+
+In teacher forcing, $Q \approx \delta(y - y_{gt})$ (or scheduled mixture), so $\mathcal{L}$ minimizes approximately $\mathbb{E}_Q [E]$ (entropy $\approx 0$ for Dirac).
+
+For a full EBM: relax $Q$ towards sampling (e.g., GFN-style trajectories), with reward $R(y) = \exp(-E(y|x))$, and trajectory balance to estimate $Z$ without full summation.
+
+Thus, teacher forcing implicitly minimizes a free energy bound via importance sampling, making the training energy-based without an explicit $Z$.
+
+\end{document}

@@ -1,0 +1,14 @@
+# Core dependencies
+torch>=2.0.0
+numpy>=1.24.0
+transformers>=4.30.0
+wandb>=0.15.0
+scipy>=1.10.0
+tqdm>=4.65.0
+
+# For OpenAI oracle
+openai>=1.0.0
+
+# Optional: for faster inference
+# accelerate>=0.20.0
+# bitsandbytes>=0.40.0
