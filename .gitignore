@@ -62,7 +62,6 @@ Thumbs.db
 *.snm
 *.vrb
 *.dvi
-*.pdf
 
 # Logs
 *.log
